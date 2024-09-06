@@ -15,6 +15,7 @@ public class SchedulerConfig implements SchedulingConfigurer {
 
         int n = Runtime.getRuntime().availableProcessors();
         threadPoolTaskScheduler.setPoolSize(n);
+        threadPoolTaskScheduler.initialize();
         taskRegistrar.setTaskScheduler(threadPoolTaskScheduler);
 
     }
