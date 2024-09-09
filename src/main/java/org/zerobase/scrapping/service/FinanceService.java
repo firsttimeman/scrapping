@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.zerobase.scrapping.exception.impl.NoCompanyException;
 import org.zerobase.scrapping.model.Company;
 import org.zerobase.scrapping.model.Dividend;
 import org.zerobase.scrapping.model.ScrapedResult;
@@ -32,23 +33,13 @@ public class FinanceService {
         log.info("serach company ->" + companyName);
 
     CompanyEntity companyEntity = companyRepository.findByName(companyName)
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 회사명입니다"));
+                .orElseThrow(() -> new NoCompanyException());
 
         List<DividendEntity> dividendEntities = dividendRepository.findAllByCompanyId(companyEntity.getId());
 
         List<Dividend> dividends = dividendEntities.stream()
                         .map(e -> new Dividend(e.getDate(), e.getDividend()))
                                 .collect(Collectors.toList());
-
-     //   List<Dividend> dividends = new ArrayList<>();
-//
-//        for(var entity : dividendEntities) {
-//            dividends.add(Dividend.builder()
-//                            .date(entity.getDate())
-//                            .dividend(entity.getDividend())
-//                    .build());
-//        }
-
 
 
         return new ScrapedResult(new Company(companyEntity.getTicker(), companyEntity.getName()), dividends);

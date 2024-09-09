@@ -29,6 +29,13 @@ public class TokenProvider {
     @Value("{spring.jwt.secret}")
     private String secretKey;
 
+    /**
+     * 토큰 생성
+     * @param username
+     * @param roles
+     * @return
+     */
+
     public String generateToken(String username, List<String> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put(KEY_ROLES, roles);
@@ -44,6 +51,14 @@ public class TokenProvider {
                 .compact();
 
 
+    }
+
+    private Claims parseClaims(String token) {
+        try {
+            return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 
     public String getUsername(String token) {
@@ -65,13 +80,7 @@ public class TokenProvider {
     }
 
 
-    private Claims parseClaims(String token) {
-        try {
-            return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-        } catch (ExpiredJwtException e) {
-            return e.getClaims();
-        }
-    }
+
 
 
 }

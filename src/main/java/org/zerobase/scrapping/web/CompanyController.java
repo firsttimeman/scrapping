@@ -1,6 +1,7 @@
 package org.zerobase.scrapping.web;
 
 import lombok.AllArgsConstructor;
+import org.springframework.cache.CacheManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.zerobase.scrapping.model.Company;
+import org.zerobase.scrapping.model.constants.CacheKey;
 import org.zerobase.scrapping.persist.entity.CompanyEntity;
 import org.zerobase.scrapping.service.CompanyService;
 
@@ -17,6 +19,8 @@ import java.util.List;
 @RequestMapping("/company")
 @AllArgsConstructor
 public class CompanyController {
+
+    private CacheManager redisCacheManager;
 
     private final CompanyService companyService;
 
@@ -41,7 +45,7 @@ public class CompanyController {
     @PostMapping
     @PreAuthorize("hasRole('WRITE')")
     public ResponseEntity<?> addCompany(@RequestBody Company request) {
-        String ticker = request.getTicker();
+        String ticker = request.getTicker().trim();
         if(ObjectUtils.isEmpty(ticker)) {
             throw new RuntimeException("ticker is empty ");
         }
@@ -52,8 +56,15 @@ public class CompanyController {
         return ResponseEntity.ok(company);
     }
 
-    @DeleteMapping
-    public ResponseEntity<?> deleteCompany() {
-        return null;
+    @DeleteMapping("/{ticker}")
+    @PreAuthorize("hasRole('WRITE')")
+    public ResponseEntity<?> deleteCompany(@PathVariable String ticker) {
+        String companyName = companyService.deleteCompany(ticker);
+        clearFinanceCache(companyName);
+        return ResponseEntity.ok(companyName);
+    }
+
+    public void clearFinanceCache(String companyName) {
+        redisCacheManager.getCache(CacheKey.KEY_FINANCE).evict(companyName);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.zerobase.scrapping.exception.impl.AlreadyExistUserException;
 import org.zerobase.scrapping.model.Auth;
 import org.zerobase.scrapping.persist.entity.MemberEntity;
 import org.zerobase.scrapping.persist.MemberRepository;
@@ -15,8 +16,10 @@ import org.zerobase.scrapping.persist.MemberRepository;
 @Service
 @AllArgsConstructor
 public class MemberService implements UserDetailsService {
+//UserDetailsService 확인하기
 
-    private final PasswordEncoder passwordEncoder;
+
+    private final PasswordEncoder passwordEncoder; // 패스워드 인코더
     private final MemberRepository memberRepository;
 
     @Override
@@ -30,7 +33,7 @@ public class MemberService implements UserDetailsService {
         boolean exists = memberRepository.existsByUsername(member.getUsername());
 
         if(exists) {
-            throw new RuntimeException("username already exists");
+            throw new AlreadyExistUserException();
         }
 
         member.setPassword(passwordEncoder.encode(member.getPassword()));

@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.zerobase.scrapping.persist.entity.DividendEntity;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -12,6 +13,9 @@ import java.util.List;
 public interface DividendRepository extends JpaRepository<DividendEntity, Long> {
 
     List<DividendEntity> findAllByCompanyId(Long companyId);
+
+    @Transactional
+    void deleteAllByCompanyId(Long companyId);
 
     boolean existsByCompanyIdAndDate(Long companyId, LocalDateTime date);
 }
